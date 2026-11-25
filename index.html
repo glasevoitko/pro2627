@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Код-календарь достижений</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--ink:#20332c;--muted:#6b7d74;--green:#2d8a68;--line:#dce8e0;--mint:#e6f5ed;--gold:#ffcf5a}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#eff8f2,#f8f7ff);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+header{padding:26px 18px 18px;text-align:center;background:linear-gradient(120deg,#1e7659,#48a782);color:white}
+header h1{margin:0;font-size:clamp(1.5rem,4vw,2.3rem)}header p{margin:7px 0 0;opacity:.92}
+main{max-width:1200px;margin:20px auto;padding:0 14px 30px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 8px 24px #244c3610}
+.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.month-title{font-size:1.35rem;font-weight:800;text-transform:capitalize}
+button,select,input{font:inherit}button{border:0;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:650}
+.btn{background:var(--mint);color:#24684e}.btn-primary{background:var(--green);color:white}.btn-quiet{background:#f1f4f2;color:#40554b}.btn-danger{background:#fff0ef;color:#a33c37}
+.weekdays,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.weekdays div{text-align:center;color:var(--muted);font-size:.8rem;font-weight:750;padding:6px 0}
+.day{min-height:108px;border:1px solid var(--line);border-radius:12px;padding:7px;background:#fff;cursor:pointer;transition:.15s;min-width:0}
+.day:hover{border-color:#71b99a;background:#fbfffc}.day.selected{outline:2px solid var(--green);background:#f0fbf4}.day.empty{background:#f8faf8;border-style:dashed;cursor:default}
+.day.today .day-num{background:var(--gold);color:#513e00}.day-top{display:flex;justify-content:space-between;align-items:center}.day-num{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;font-weight:800;font-size:.86rem}
+.day-count{font-size:.68rem;color:var(--muted)}.marks{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.mark{display:inline-flex;align-items:center;gap:3px;background:#edf8f1;border:1px solid #d5eddf;border-radius:7px;padding:3px 5px;font-size:.74rem;max-width:100%}.mark .emoji{font-size:1rem}.mark .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-title{margin:0 0 10px;font-size:1.05rem}.field{display:grid;gap:5px;margin:11px 0}.field label{font-size:.82rem;color:var(--muted);font-weight:700}.field select,.field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--ink)}
+.student-list{display:grid;gap:7px}.student{display:flex;align-items:center;gap:9px;padding:8px;border-radius:10px;background:#f7faf8}.student .icon{font-size:1.35rem;width:30px;text-align:center}.student .name{font-weight:700}.student .sticker{margin-left:auto;color:#42745d;font-size:.8rem}
+.selected-date{font-weight:800;color:var(--green);margin-bottom:8px}.assigned-list{display:grid;gap:7px}.assigned{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px}.assigned .info{flex:1;min-width:0}.assigned .info b{display:block}.assigned .info small{color:var(--muted);overflow-wrap:anywhere}.assigned button{padding:5px 8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.note{font-size:.8rem;color:var(--muted);line-height:1.45}.stat{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf2ee}.stat:last-child{border:0}.stat strong{color:var(--green)}
+footer{text-align:center;padding:0 16px 25px;color:var(--muted);font-size:.82rem}
+@media(max-width:850px){main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr;gap:14px}.day{min-height:90px;padding:5px}.mark .who{display:none}.mark{padding:3px}.marks{gap:3px}}
+@media(max-width:480px){main{padding:0 8px 20px;margin-top:10px}.panel{padding:10px;border-radius:14px}.calendar,.weekdays{gap:3px}.day{min-height:70px;border-radius:8px}.day-num{width:23px;height:23px;font-size:.78rem}.day-count{display:none}.mark{font-size:.7rem}.toolbar{gap:5px}.month-title{font-size:1.1rem}button{padding:8px 9px}}
+.year-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.mini-month{border:1px solid var(--line);border-radius:12px;padding:9px;background:#fff}.mini-month h3{text-align:center;margin:5px 0 8px;font-size:.95rem;text-transform:capitalize}.mini-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.mini-days span{font-size:.68rem;text-align:center;padding:4px 1px;border-radius:5px}.mini-days .hasmarks{background:#e1f4e8;color:#25694c;font-weight:800}@media(max-width:700px){.year-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:440px){.year-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>💻 Код-календарь достижений</h1><p>Каждое выполненное задание — новый значок в копилку программиста!</p></header>
+<main>
+<section class="panel">
+  <div class="toolbar">
+    <button class="btn" id="prev">← Предыдущий</button>
+    <div class="month-title" id="monthTitle"></div>
+    <button class="btn" id="next">Следующий →</button><button class="btn-quiet" id="yearView">📅 Весь год</button>
+  </div>
+  <div class="weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
+  <div class="calendar" id="calendar"></div><div id="yearGrid" style="display:none"></div>
+  <div class="actions">
+    <button class="btn-quiet" id="export">⬇ Сохранить резервную копию</button>
+    <button class="btn-quiet" id="importBtn">⬆ Загрузить копию</button>
+    <input id="importFile" type="file" accept="application/json" hidden>
+    <button class="btn-danger" id="clearAll">Очистить все отметки</button>
+  </div>
+  <p class="note">Отметки сохраняются автоматически в этом браузере на этом компьютере. Резервная копия JSON поможет перенести календарь или восстановить данные.</p>
+</section>
+<aside class="side">
+  <section class="panel">
+    <h2 class="side-title">🎯 Добавить достижение</h2>
+    <div class="selected-date" id="selectedDateLabel"></div>
+    <div class="field"><label for="studentSelect">Ученик</label><select id="studentSelect"></select></div>
+    <div class="field"><label for="taskSelect">Значок за задание</label><select id="taskSelect">
+      <option value="⭐">⭐ Задание выполнено</option><option value="🚀">🚀 Сложная задача</option><option value="🐞">🐞 Нашёл и исправил ошибку</option><option value="🧠">🧠 Отличная идея</option><option value="🏆">🏆 Победа / рекорд</option><option value="🤝">🤝 Помог товарищу</option><option value="🎯">🎯 Точность и аккуратность</option><option value="🔥">🔥 Серия без пропусков</option>
+    </select></div>
+    <div class="field"><label for="taskNote">Комментарий (необязательно)</label><input id="taskNote" maxlength="100" placeholder="Например: решил задачу № 5"></div>
+    <button class="btn-primary" id="addMark" style="width:100%">＋ Поставить значок на дату</button>
+    <p class="note">У каждого ученика есть свой постоянный значок-аватар. В календаре он отображается вместе со значком достижения.</p>
+  </section>
+  <section class="panel">
+    <h2 class="side-title">📅 Отметки за выбранный день</h2>
+    <div class="assigned-list" id="assignedList"></div>
+    <p class="note" id="emptyDay">Выберите дату и добавьте первое достижение.</p>
+  </section>
+  <section class="panel">
+    <h2 class="side-title">👾 Команда программистов</h2>
+    <div class="student-list" id="studentList"></div>
+    <div style="margin-top:12px" id="stats"></div>
+  </section>
+</aside>
+</main>
+<footer>Код-календарь • Работает без интернета • Данные сохраняются автоматически</footer>
+<script>
+const students = [
+ {name:"Назар",icon:"🦊",sticker:"Лис-программист"},
+ {name:"Никита",icon:"🤖",sticker:"Кибербот"},
+ {name:"Данила",icon:"🐉",sticker:"Дракон кода"},
+ {name:"Денис",icon:"🦖",sticker:"Дино-хакер"},
+ {name:"Ваня",icon:"🚀",sticker:"Ракетный старт"},
+ {name:"Митя",icon:"🐼",sticker:"Панда-логик"},
+ {name:"Мирон",icon:"🦉",sticker:"Сова алгоритмов"},
+ {name:"Захар",icon:"🦁",sticker:"Лев отладки"},
+ {name:"Тарзан",icon:"🐒",sticker:"Обезьянка-кодер"},
+ {name:"Арсений",icon:"🦈",sticker:"Акула задач"},
+ {name:"Глеб",icon:"🐺",sticker:"Волк решений"},
+ {name:"Миша",icon:"🐸",sticker:"Лягушка-питонист"},
+ {name:"Сахар",icon:"🐝",sticker:"Пчела идей"},
+ {name:"Рома",icon:"🦄",sticker:"Единорог технологий"},
+ {name:"Санек",icon:"🛠️",sticker:"Мастер кода"}
+];
+const $ = id => document.getElementById(id);
+const today = new Date();
+let viewYear = today.getFullYear(), viewMonth = today.getMonth(), selectedDate = dateKey(today);
+let marks = {};
+try { marks = JSON.parse(localStorage.getItem("kod-calendar-v1") || "{}") || {}; } catch(e) { marks = {}; }
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function parseKey(key){const [y,m,d]=key.split("-").map(Number);return new Date(y,m-1,d)}
+function save(){try{localStorage.setItem("kod-calendar-v1",JSON.stringify(marks));}catch(e){alert("Не удалось сохранить данные в браузере. Скачайте резервную копию.");}}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderCalendar(){
+ const first=new Date(viewYear,viewMonth,1), days=new Date(viewYear,viewMonth+1,0).getDate();
+ $("monthTitle").textContent=first.toLocaleDateString("ru-RU",{month:"long",year:"numeric"});
+ const offset=(first.getDay()+6)%7; let html="";
+ for(let i=0;i<offset;i++)html+='<div class="day empty"></div>';
+ for(let d=1;d<=days;d++){
+  const key=dateKey(new Date(viewYear,viewMonth,d)), arr=marks[key]||[], isToday=key===dateKey(today), selected=key===selectedDate;
+  const preview=arr.slice(0,10).map(m=>{const s=students.find(x=>x.name===m.student)||{icon:"👤"};return `<span class="mark" title="${escapeHtml(m.student+" — "+m.task+(m.note?": "+m.note:""))}"><span class="emoji">${s.icon}${m.task}</span><span class="who">${escapeHtml(m.student)}</span></span>`}).join("");
+  html+=`<div class="day ${selected?"selected":""} ${isToday?"today":""}" data-date="${key}"><div class="day-top"><span class="day-num">${d}</span><span class="day-count">${arr.length?arr.length+" шт.":""}</span></div><div class="marks">${preview}</div></div>`;
+ }
+ $("calendar").innerHTML=html;
+ $("calendar").querySelectorAll(".day[data-date]").forEach(el=>el.addEventListener("click",()=>{selectedDate=el.dataset.date;renderCalendar();renderSelectedDay();}));
+}
+
+let showingYear = false;
+function renderYear(){const container=$("yearGrid"),year=viewYear;const monthNames=Array.from({length:12},(_,m)=>new Date(year,m,1).toLocaleDateString("ru-RU",{month:"long"}));container.innerHTML='<div class="year-grid">'+monthNames.map((mn,m)=>{const first=new Date(year,m,1),total=new Date(year,m+1,0).getDate(),offset=(first.getDay()+6)%7;let cells=Array(offset).fill('<span></span>');for(let d=1;d<=total;d++){const key=dateKey(new Date(year,m,d)),count=(marks[key]||[]).length;cells.push(`<span class="${count?'hasmarks':''}" data-date="${key}" title="${count?count+' достижений':''}">${d}${count?'•':''}</span>`);}return `<div class="mini-month"><h3>${mn}</h3><div class="mini-days">${['П','В','С','Ч','П','С','В'].map(x=>`<span>${x}</span>`).join('')}${cells.join('')}</div></div>`;}).join('')+'</div>';container.querySelectorAll('[data-date]').forEach(el=>el.addEventListener('click',()=>{selectedDate=el.dataset.date;const d=parseKey(selectedDate);viewYear=d.getFullYear();viewMonth=d.getMonth();showingYear=false;$("yearGrid").style.display="none";$("calendar").style.display="grid";renderAll();}));}
+
+function renderSelectedDay(){
+ const d=parseKey(selectedDate);
+ $("selectedDateLabel").textContent=d.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ const arr=marks[selectedDate]||[];
+ $("assignedList").innerHTML=arr.map((m,i)=>{const s=students.find(x=>x.name===m.student)||{icon:"👤"};return `<div class="assigned"><span style="font-size:1.35rem">${s.icon}${m.task}</span><div class="info"><b>${escapeHtml(m.student)}</b><small>${escapeHtml(m.note||m.task)}</small></div><button class="btn-danger" data-remove="${i}" title="Удалить отметку">×</button></div>`}).join("");
+ $("emptyDay").style.display=arr.length?"none":"block";
+ $("assignedList").querySelectorAll("[data-remove]").forEach(b=>b.addEventListener("click",()=>{arr.splice(Number(b.dataset.remove),1);if(!arr.length)delete marks[selectedDate];save();renderAll();}));
+}
+function renderRoster(){
+ $("studentList").innerHTML=students.map(s=>`<div class="student"><span class="icon">${s.icon}</span><span><span class="name">${s.name}</span><br><span class="note">${s.sticker}</span></span></div>`).join("");
+ $("studentSelect").innerHTML=students.map(s=>`<option value="${s.name}">${s.icon} ${s.name} — ${s.sticker}</option>`).join("");
+ const counts=students.map(s=>({name:s.name,icon:s.icon,n:Object.values(marks).flat().filter(m=>m.student===s.name).length})).sort((a,b)=>b.n-a.n);
+ $("stats").innerHTML='<h3 class="side-title">🏅 Всего достижений</h3>'+counts.map(s=>`<div class="stat"><span>${s.icon} ${s.name}</span><strong>${s.n}</strong></div>`).join("")+`<div class="stat"><span>Всего отметок</span><strong>${Object.values(marks).flat().length}</strong></div>`;
+}
+function renderAll(){renderCalendar();if(showingYear)renderYear();renderSelectedDay();renderRoster()}
+$("prev").onclick=()=>{if(showingYear){viewYear--;renderYear();$("monthTitle").textContent=viewYear;}else{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--}renderCalendar()}};
+$("next").onclick=()=>{if(showingYear){viewYear++;renderYear();$("monthTitle").textContent=viewYear;}else{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++}renderCalendar()}};
+$("yearView").onclick=()=>{showingYear=!showingYear;$("calendar").style.display=showingYear?"none":"grid";$("yearGrid").style.display=showingYear?"block":"none";$("yearView").textContent=showingYear?"🗓️ По месяцам":"📅 Весь год";if(showingYear){$("monthTitle").textContent=viewYear;renderYear();}else renderCalendar();};
+$("addMark").onclick=()=>{
+ const student=$("studentSelect").value, task=$("taskSelect").value, note=$("taskNote").value.trim();
+ if(!marks[selectedDate])marks[selectedDate]=[];
+ marks[selectedDate].push({student,task,note,createdAt:new Date().toISOString()});
+ save();$("taskNote").value="";renderAll();
+};
+$("clearAll").onclick=()=>{if(confirm("Удалить все отметки календаря? Это действие нельзя отменить без резервной копии.")){marks={};save();renderAll();}};
+$("export").onclick=()=>{const blob=new Blob([JSON.stringify({version:1,students,marks},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="kod-kalendar-rezervnaya-kopiya.json";a.click();URL.revokeObjectURL(url)};
+$("importBtn").onclick=()=>$("importFile").click();
+$("importFile").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(!data.marks||typeof data.marks!=="object")throw new Error();if(confirm("Заменить текущие отметки данными из файла?")){marks=data.marks;save();renderAll();}}catch(err){alert("Не удалось прочитать копию. Выберите JSON-файл, созданный этим календарём.");}e.target.value=""};
+renderAll();
+</script>
+</body>
+</html>
